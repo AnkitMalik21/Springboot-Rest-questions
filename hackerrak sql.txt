@@ -1,0 +1,1085 @@
+hacker 
+
+ques 14
+
+-- Products table
+CREATE TABLE products (
+    id INT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    in_stock BOOLEAN NOT NULL
+);
+
+-- Wishlists table
+CREATE TABLE wishlists (
+    product_id INT REFERENCES products(id),
+    customer_email VARCHAR(255) NOT NULL
+);
+
+INSERT INTO products (id, name, price, in_stock) VALUES
+(1, 'TechGadget Pro X', 274.80, true),
+(2, 'LuxuryHome Decor Set', 262.84,true),
+(3, 'FitnessTracker Elite', 637.92, false),
+(4, 'GourmetCookware Set', 535.34, true),
+(5, 'Fashionista Wardrobe Collection', 525.44, true);
+
+INSERT INTO wishlists (product_id, customer_email) VALUES
+(1, 'crabbec@redcross.org'),
+(1, 'efindlow2@tinypic.com'),
+(1, 'jmachoste5@issuu.com'),
+(1, 'nselle@simplemachines.org'),
+(2, 'aonn1@ebay.co.uk'),
+(2, 'bbolton0@google.cn'),
+(2, 'ebockett3@storify.com'),
+(2, 'fdunguyg@symantec.com'),
+(3, 'slowried@cbsnews.com'),
+(3, 'jgately7@goo.ne.jp'),
+(3, 'ospearettj@bandcamp.com'),
+(3, 'rpanonsb@paypal.com'),
+(4, 'ydevauxh@toplist.cz'),
+(4, 'zbabbage9@imageshack.us'),
+(4, 'dpauleya@cnbc.com'),
+(4, 'jletterick4@dailymotion.com'),
+(5, 'khunnisett6@princeton.edu'),
+(5, 'rkernellf@uiuc.edu'),
+(5, 'blodin8@wikimedia.org'),
+(5, 'lyusupovi@nps.gov');
+
+
+select 
+    p.name as name,
+	p.price as price,
+	count(w.product_id) as total_wishes
+from products as p
+join wishlists as w
+on p.id = w.product_id
+where p.in_stock = true
+group by p.id
+order by total_wishes desc,name asc
+limit 3;
+
+
+--question 15
+
+
+CREATE TABLE customers (
+    id INT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL
+);
+
+INSERT INTO customers (id, email) VALUES
+(1, 'foggie0@newsvine.com'),
+(2, 'sgillbe1@ca.gov'),
+(3, 'jgohn2@elegantthemes.com');
+
+
+CREATE TABLE purchases (
+    customer_id INT REFERENCES customers(id),
+    dt TIMESTAMP NOT NULL,
+    amount DECIMAL(10,2) NOT NULL
+);
+
+INSERT INTO purchases (customer_id, dt, amount) VALUES
+(2, '2024-02-21 02:56:12', 228.58),
+(2, '2024-02-23 09:32:47', 972.41),
+(1, '2024-03-14 15:50:13', 109.16),
+(1, '2024-03-17 00:31:44', 11.49),
+(1, '2024-03-17 04:15:42', 692.64),
+(2, '2024-03-01 04:35:09', 589.74),
+(2, '2024-03-13 14:42:23', 508.75),
+(2, '2024-03-17 07:57:36', 933.91),
+(2, '2024-03-19 08:24:38', 488.26),
+(2, '2024-03-31 23:30:54', 55.07),
+(3, '2024-03-03 11:34:30', 816.67),
+(3, '2024-03-08 23:46:07', 672.93),
+(3, '2024-03-15 18:09:56', 260.66),
+(3, '2024-03-20 15:18:11', 321.07),
+(3, '2024-03-20 17:40:35', 29.06),
+(3, '2024-03-20 23:41:39', 314.85),
+(3, '2024-03-25 11:41:07', 67.12),
+(1, '2024-04-05 03:05:10', 417.78),
+(2, '2024-04-09 08:16:17', 697.53),
+(3, '2024-04-02 07:56:48', 156.27);
+
+
+select
+    c.email as email,
+    count(c.email) as total_purchases,
+    sum(p.amount) as total_purchase_amount
+from customers as c 
+join purchases as p
+on c.id = p.customer_id
+where p.dt between '2024-03-01' and '2024-03-31'
+group by c.email
+order by c.email asc;
+
+
+-- this one works please 
+select
+    c.email as email,
+    count(c.email) as total_purchases,
+    sum(p.amount) as total_purchase_amount
+from customers as c 
+join purchases as p
+on c.id = p.customer_id
+where extract(year from p.dt)='2024' and extract(month from p.dt)='03'
+group by c.email
+order by c.email asc;
+
+SELECT dt, amount 
+FROM purchases
+WHERE customer_id = 2
+AND dt BETWEEN '2024-03-01' AND '2024-03-31'
+ORDER BY dt;
+
+
+```question 16
+-- Applicants table
+CREATE TABLE applicants (
+    id INT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL
+);
+
+INSERT INTO applicants (id, email) VALUES
+(1, 'nkienzle0@spiegel.de'),
+(2, 'alaste1@bbc.co.uk'),
+(3, 'jjochanany2@ow.ly'),
+(4, 'bsenn3@salon.com'),
+(5, 'bwhittall4@nhs.uk');
+
+-- Appointments table
+CREATE TABLE appointments (
+    applicant_id INT REFERENCES applicants(id),
+    dt DATE NOT NULL,
+    is_received BOOLEAN NOT NULL
+);
+
+INSERT INTO appointments (applicant_id, dt, is_received) VALUES
+(1, '2024-04-27', false),
+(2, '2024-04-01', false),
+(3, '2024-04-15', false),
+(4, '2024-03-27', false),
+(5, '2024-03-26', true);
+
+
+select 
+  a1.email  as email,
+  a2.dt  as scheduled_appointment,
+  ('2024-04-10' - a2.dt)  as days_of_delays
+from applicants as a1 
+join appointments as a2 
+on a1.id = a2.applicant_id
+where a2.is_received=false and a2.dt<='2024-04-10'
+group by a1.email , a2.dt
+order by  a2.dt asc, email asc;
+
+
+``question 17
+-- Applicants table
+CREATE TABLE applicants (
+    id INT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL
+);
+
+INSERT INTO applicants (id, email) VALUES
+(1, 'rastlatt0@instagram.com'),
+(2, 'gcarmody1@stanford.edu'),
+(3, 'mgreenset2@state.tx.us');
+
+-- Appointments table with timestamp
+CREATE TABLE appointments (
+    applicant_id INT REFERENCES applicants(id),
+    dt TIMESTAMP NOT NULL
+);
+
+INSERT INTO appointments (applicant_id, dt) VALUES
+(1, '2024-05-26 01:36:43'),
+(2, '2024-05-27 16:30:28'),
+(3, '2024-05-18 19:28:52');
+
+select 
+  a1.email  as email,
+  TO_CHAR(a2.dt,'Day') as scheduled_appointment
+from applicants as a1 
+join Appointments as a2 
+on a1.id = a2.applicant_id
+where extract(dow from a2.dt) in (0,6)
+group by a1.email,a2.dt;
+
+select 
+  a1.email  as email,
+  TO_CHAR(a2.dt,'Day') as scheduled_appointment
+from applicants as a1 
+join Appointments as a2 
+on a1.id = a2.applicant_id
+WHERE to_char(a2.dt, 'FMDay') IN ('Saturday', 'Sunday')
+group by a1.email,a2.dt;
+
+---- question 18
+
+-- Countries table
+CREATE TABLE countries (
+    id INT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+INSERT INTO countries (id, name) VALUES
+(1, 'Azerbaijan'),
+(2, 'Colombia'),
+(3, 'China');
+
+-- Domains table
+CREATE TABLE domains (
+    country_id INT REFERENCES countries(id),
+    name VARCHAR(255) NOT NULL,
+    is_active BOOLEAN NOT NULL
+);
+
+INSERT INTO domains (country_id, name, is_active) VALUES
+(1, 'angelre.com', TRUE),
+(1, 'free.fr', TRUE),
+(1, 'google.cn', TRUE),
+(1, 'nationalgeographic.com', TRUE),
+(1, 'ovh.net', TRUE),
+(1, 'surveymonkey.com', TRUE),
+(1, 'twitpic.com', TRUE),
+(2, 'ameblo.jp', TRUE),
+(2, 'berkeley.edu', TRUE),
+(2, 'multiply.com', TRUE),
+(2, 'redcross.org', TRUE),
+(2, 'sourceforge.net', TRUE),
+(3, 'hc360.com', TRUE),
+(3, 'liveinternet.ru', TRUE),
+(3, 'squidoo.com', TRUE),
+(3, 'technorati.com', TRUE),
+(3, 'webnode.com', TRUE),
+(3, 'yahoo.co.jp', TRUE),
+(1, '1und1.de', FALSE),
+(1, 'qq.com', FALSE);
+
+
+select 
+  c.name as country_name,
+  count(d.country_id) as total_domain
+from countries as c 
+join domains as d 
+on c.id = d.country_id
+where d.is_active=true
+group by c.name
+order by c.name asc;
+
+
+---question 19
+
+CREATE TABLE domains (
+    name VARCHAR(255) PRIMARY KEY,
+    next_renewal_date TIMESTAMP NOT NULL
+);
+
+INSERT INTO domains (name, next_renewal_date) VALUES
+('wired.com', '2024-06-14 00:10:12'),
+('blogger.com', '2024-07-18 05:54:57'),
+('com.com', '2024-07-21 02:57:25');
+
+
+
+
+SELECT 
+  name,
+  next_renewal_date::DATE AS renewal_date,
+  '2024-04-10'::DATE AS current_date,
+  (next_renewal_date::DATE - '2024-04-10'::DATE) AS days_until_renewal
+  
+FROM domains;
+
+
+-- SELECT 
+--   '2024-04-10 15:23:30'::date AS date_only,
+--   EXTRACT(DAY FROM TIMESTAMP '2024-04-10 15:23:30') AS day,
+--   EXTRACT(HOUR FROM TIMESTAMP '2024-04-10 15:23:30') AS hour,
+--   EXTRACT(MINUTE FROM TIMESTAMP '2024-04-10 15:23:30') AS minute,
+--   EXTRACT(SECOND FROM TIMESTAMP '2024-04-10 15:23:30') AS second,
+--   EXTRACT(MONTH FROM TIMESTAMP '2024-04-10 15:23:30') AS month,
+--   EXTRACT(YEAR FROM TIMESTAMP '2024-04-10 15:23:30') AS year;
+
+
+-- Correct usage example:
+-- Extract day of month:
+
+-- sql
+-- SELECT EXTRACT(DAY FROM TIMESTAMP '2024-04-10 15:23:00');  -- returns 10
+-- Extract month:
+
+-- sql
+-- SELECT EXTRACT(MONTH FROM DATE '2024-04-10');  -- returns 4
+-- To get the full date from timestamp, cast timestamp to date:
+
+-- sql
+-- SELECT '2024-04-10 15:23:00'::timestamp::date;  -- returns '2024-04-10'
+-- Why you should cast instead of extract whole date:
+-- EXTRACT returns only parts of a date/time, never the full date.
+
+-- Arithmetic like (date1 - date2) works directly on DATE types.
+
+-- Converting timestamps to dates with cast lets you do arithmetic correctly.
+
+---->question 20
+
+-- Users table
+CREATE TABLE users (
+    id INT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL
+);
+
+INSERT INTO users (id, email) VALUES
+(1, 'bblaszczynski0@devhub.com'),
+(2, 'dwookey1@chronoengine.com'),
+(3, 'erway2@wikipedia.org');
+
+-- Transactions table
+CREATE TABLE transactions (
+    user_id INT REFERENCES users(id),
+    dt TIMESTAMP NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL
+);
+
+INSERT INTO transactions (user_id, dt, amount) VALUES
+(1, '2024-02-23 19:30:03', 942.50),
+(1, '2024-03-07 09:01:15', 855.22),
+(1, '2024-04-01 04:18:41', 253.35),
+(1, '2024-04-07 02:40:58', 886.88),
+(2, '2024-02-25 05:11:39', 957.77),
+(2, '2024-03-06 03:00:40', 413.39),
+(2, '2024-03-07 14:41:03', 906.16),
+(2, '2024-03-10 00:58:13', 116.59),
+(2, '2024-03-13 23:38:29', 550.31),
+(2, '2024-03-22 03:07:46', 196.23),
+(2, '2024-03-24 00:23:14', 399.76),
+(2, '2024-03-25 12:28:18', 398.07),
+(2, '2024-03-27 09:11:15', 212.33),
+(2, '2024-04-09 06:33:26', 97.85),
+(3, '2024-03-01 17:24:48', 323.11),
+(3, '2024-03-05 10:16:06', 673.23),
+(3, '2024-03-08 14:19:46', 236.74),
+(3, '2024-03-23 15:37:47', 234.87),
+(3, '2024-04-05 20:55:45', 989.35),
+(3, '2024-04-07 05:26:35', 369.20);
+
+
+
+
+select
+    u.email as email,
+    count(t.user_id) as total_transactions,
+    min(t.amount) as min_amount,
+    max(t.amount) as max_amount,
+    sum(t.amount) as total_amount
+from users as u 
+join transactions as t 
+on u.id = t.user_id
+where extract(year from t.dt) = '2024' and extract(month from t.dt)='03'
+group by u.email, t.user_id;
+   
+   
+   
+   
+-->question 21
+
+  -- Create users table
+CREATE TABLE users (
+    id INT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL
+);
+
+-- Insert data into users table
+INSERT INTO users (id, email) VALUES
+(1, 'lvasilevich0@google.co.uk'),
+(2, 'hscholey1@sina.com.cn'),
+(3, 'mmcjury2@hibu.com');
+
+--------------------------------------------------
+
+-- Create transactions table
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,       -- Auto-generated transaction id
+    user_id INT NOT NULL,
+    dt TIMESTAMP NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- Insert data into transactions table
+INSERT INTO transactions (user_id, dt, amount) VALUES
+(3, '2022-12-05 00:16:56', 162.11),
+
+(1, '2023-05-20 03:20:58', 81.58),
+(1, '2023-06-08 19:24:02', 52.46),
+(1, '2023-06-27 21:16:07', 447.59),
+(1, '2023-07-20 08:19:32', 136.68),
+(1, '2023-12-11 17:08:05', 852.55),
+
+(1, '2023-12-15 04:45:54', 77.11),
+(1, '2023-12-22 00:46:34', 670.71),
+(1, '2023-12-29 12:43:23', 948.46),
+(2, '2023-01-04 00:51:46', 793.50),
+(2, '2023-04-07 16:29:14', 762.52),
+(2, '2023-06-17 17:42:50', 527.18),
+(2, '2023-10-10 11:16:51', 733.47),
+(2, '2023-10-18 23:32:00', 920.14),
+
+(3, '2023-03-27 18:31:41', 408.13),
+(3, '2023-04-08 09:57:55', 817.88),
+(3, '2023-05-18 09:47:14', 916.98),
+(3, '2023-09-14 14:00:54', 53.30),
+(3, '2023-09-30 01:34:01', 589.37),
+(3, '2024-01-27 15:13:58', 666.37);
+
+
+select
+    u.email as email,
+    count(t.user_id) as total_transactions,
+    sum(t.amount) as total_amount
+from users u 
+join transactions t 
+on u.id = t.user_id
+where extract(year from t.dt) ='2023'
+group by u.email,t.user_id
+order by email asc;
+
+
+
+--question 22
+-- Create coins table
+CREATE TABLE coins (
+    id INT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
+
+-- Insert coin data
+INSERT INTO coins (id, name) VALUES
+(1, 'BitCash'),
+(2, 'Etherium'),
+(3, 'Litecoin'),
+(4, 'Ripple'),
+(5, 'Dogecoin');
+
+-- Create transactions table
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,       -- Auto-increment transaction id
+    coin_id INT NOT NULL,
+    dt TIMESTAMP NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (coin_id) REFERENCES coins(id)
+);
+
+-- Insert transaction data
+INSERT INTO transactions (coin_id, dt, amount) VALUES
+(1, '2022-12-09 19:40:17', 60.91),
+(1, '2023-01-02 09:35:37', 76.35),
+(1, '2023-03-21 09:34:39', 23.11),
+(1, '2023-08-11 03:43:27', 80.20),
+(1, '2023-10-21 19:42:46', 29.59),
+
+(2, '2023-07-08 19:47:20', 69.49),
+
+(2, '2023-09-22 14:23:40', 23.13),
+(3, '2023-01-08 10:22:10', 72.45),
+(3, '2023-01-28 00:54:51', 98.72),
+(3, '2023-02-24 00:13:32', 70.36),
+(3, '2023-05-16 15:13:19', 93.59),
+
+(4, '2023-05-24 13:43:44', 9.34),
+(4, '2023-07-25 14:59:09', 78.52),
+
+(5, '2023-01-20 15:49:38', 81.66),
+(5, '2023-08-21 17:19:45', 94.89),
+(5, '2023-10-25 00:44:42', 64.40),
+(5, '2023-11-30 02:38:47', 86.84),
+(5, '2023-12-31 03:26:39', 58.99),
+(2, '2024-01-21 10:25:26', 29.36),
+(5, '2024-01-08 03:09:00', 95.25);
+
+
+select 
+  c.name  as name,
+  round(avg(t.amount) ,2) as avg_tranasaction_amount
+from coins c 
+join transactions t 
+on c.id = t.coin_id
+where extract(year from t.dt) ='2023'
+group by c.name
+order by avg_tranasaction_amount asc
+limit 3;
+
+--->question 23
+-- Create coins table
+CREATE TABLE coins (
+    id INT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
+
+-- Insert coin data
+INSERT INTO coins (id, name) VALUES
+(1, 'BitCash'),
+(2, 'Etherium'),
+(3, 'Litecoin');
+
+--------------------------------------------------
+
+-- Create transactions table
+CREATE TABLE transactions (
+    coin_id INT NOT NULL,
+    dt TIMESTAMP NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    PRIMARY KEY (coin_id, dt),
+    FOREIGN KEY (coin_id) REFERENCES coins(id)
+);
+
+-- Insert transaction data (coin_id, dt, amount)
+INSERT INTO transactions (coin_id, dt, amount) VALUES
+(1, '2024-02-24 14:56:31', 69.38),
+(2, '2024-02-24 17:23:54', 46.79),
+(1, '2024-03-07 15:07:57', 73.45),
+(1, '2024-03-13 00:47:18', 2.10),
+(1, '2024-03-13 06:21:06', 5.68),
+(1, '2024-03-14 15:06:59', 25.32),
+(1, '2024-03-20 02:10:37', 72.85),
+(2, '2024-03-09 12:06:47', 67.79),
+(2, '2024-03-16 06:17:14', 82.87),
+(2, '2024-03-24 11:11:23', 5.96),
+(2, '2024-03-26 14:36:34', 21.80),
+(3, '2024-03-20 08:28:56', 5.07),
+(3, '2024-03-23 06:45:13', 11.85),
+(3, '2024-03-27 02:40:23', 34.25),
+(3, '2024-03-28 07:37:50', 81.12),
+(3, '2024-03-29 07:34:32', 19.06),
+(1, '2024-04-02 08:49:17', 13.04),
+(2, '2024-04-04 17:29:13', 4.74),
+(2, '2024-04-04 20:17:36', 94.42),
+(2, '2024-04-07 01:47:46', 64.76);
+
+select
+  c.name as name,
+  count(t.amount) as total_transactions,
+  min(t.amount) as min_amount,
+  max(t.amount) as max_amount,
+  round(avg(t.amount),2) as avg_amount
+from coins c 
+join transactions t 
+on c.id = t.coin_id
+where extract(year from t.dt)='2024' and 
+extract(month from t.dt)='03'
+group by c.name
+order by total_transactions desc;
+
+
+
+---question 24
+
+-- Create suspicious_files table
+CREATE TABLE suspicious_files (
+    filename VARCHAR(255) NOT NULL,
+    extension VARCHAR(16) NOT NULL,
+    scan_dt TIMESTAMP NOT NULL,
+    is_suspicious BOOLEAN NOT NULL
+);
+
+-- Insert data
+INSERT INTO suspicious_files (filename, extension, scan_dt, is_suspicious) VALUES
+('Mauris.pdf', '.pdf', '2024-04-05 23:55:27', TRUE),
+('Augue.xls', '.xls', '2024-02-28 18:11:28', TRUE),
+('Sapien.avi', '.avi', '2024-03-30 12:24:10', TRUE),
+('Pulvinar.doc', '.doc', '2024-03-08 22:00:41', TRUE),
+('TemporConvallisNulla.gif', '.gif', '2024-03-29 21:32:41', TRUE),
+('InFaucibus.mp3', '.mp3', '2024-03-20 14:18:32', TRUE),
+
+('EleifendPedeLibero.ppt', '.ppt', '2024-03-05 04:47:56', TRUE),
+('VestibulumAnteIpsum.ppt', '.ppt', '2024-03-05 17:34:34', TRUE),
+('IntegerPede.ppt', '.ppt', '2024-03-12 17:11:28', TRUE),
+('VenenatisNon.tiff', '.tiff', '2024-03-20 18:04:47', TRUE),
+('IaculisDiam.xls', '.xls', '2024-03-01 05:18:03', TRUE),
+('QuisqueArcuLibero.xls', '.xls', '2024-03-09 09:00:32', TRUE),
+
+('MaurisSit.png', '.png', '2024-04-03 23:20:03', FALSE),
+('SitAmetSem.mp3', '.mp3', '2024-02-23 22:06:43', FALSE),
+('Nisi.mp3', '.mp3', '2024-02-29 09:40:45', FALSE),
+('Magna.tiff', '.tiff', '2024-02-27 00:25:16', FALSE),
+('EratVestibulum.gif', '.gif', '2024-03-30 04:19:52', FALSE),
+('Neque.jpeg', '.jpeg', '2024-03-07 07:11:26', FALSE),
+('VolutpatQuam.ppt', '.ppt', '2024-03-23 04:33:43', FALSE),
+('NonQuam.xls', '.xls', '2024-03-10 19:12:29', FALSE);
+
+
+
+select 
+  s.extension  as extension,
+  count(s.extension)  as total_suspicious_files
+from suspicious_files s
+where extract (year from s.scan_dt)='2024'
+and extract(month from s.scan_dt)='03'
+and s.is_suspicious=true
+group by s.extension
+order by total_suspicious_files desc,s.extension asc
+limit 5;
+
+--->question 25
+
+-- Create clients table
+CREATE TABLE clients (
+    id INT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL
+);
+
+-- Insert clients data
+INSERT INTO clients (id, email) VALUES
+(1, 'cbracegirdle0@irs.gov'),
+(2, 'gwickardt1@msu.edu'),
+(3, 'mpaulon2@edublogs.org');
+
+--------------------------------------------------
+
+-- Create devices table
+CREATE TABLE devices (
+    client_id INT NOT NULL,
+    mac_address VARCHAR(17) NOT NULL,
+    is_scanned BOOLEAN NOT NULL,
+    scheduled_scan_dt TIMESTAMP NOT NULL,
+    PRIMARY KEY (client_id, mac_address),
+    FOREIGN KEY (client_id) REFERENCES clients(id)
+);
+
+-- Insert devices data
+INSERT INTO devices (client_id, mac_address, is_scanned, scheduled_scan_dt) VALUES
+(1, '87-EF-C7-BD-DF-A2', TRUE, '2024-02-28 08:13:55'),
+(1, '37-FE-45-2B-9D-2A', TRUE, '2024-03-07 00:00:05'),
+(1, '13-82-F2-48-88-FD', TRUE, '2024-03-11 06:53:47'),
+(1, '0D-56-2A-B2-33-EF', TRUE, '2024-03-30 19:41:31'),
+(1, '17-C3-E3-2E-37-7E', TRUE, '2024-04-06 13:14:06'),
+(1, '93-25-74-C5-07-32', FALSE, '2024-02-21 16:23:31'),
+
+(2, '64-E1-5B-12-AC-F9', FALSE, '2024-02-22 10:40:23'),
+(2, '0F-66-56-E2-B0-3A', FALSE, '2024-02-23 11:03:58'),
+(2, '40-F4-40-12-C8-A5', FALSE, '2024-02-24 18:01:50'),
+(2, 'B0-2B-99-84-68-7C', FALSE, '2024-02-25 21:31:06'),
+(2, '07-1F-BD-16-AC-23', FALSE, '2024-02-29 21:45:22'),
+(2, 'CA-79-F4-B4-9E-69', FALSE, '2024-03-29 00:05:10'),
+
+(3, '71-EB-63-A2-3C-AF', TRUE, '2024-03-03 07:50:20'),
+(3, '0B-40-DF-14-53-0F', TRUE, '2024-03-21 11:10:52'),
+(3, '0A-77-ED-ED-50-28', TRUE, '2024-04-03 04:11:25');
+
+
+
+select 
+  c.email  as email,
+  count(c.email)  as total_scanned_devices
+from clients  c
+join devices d
+on c.id = d.client_id
+where extract(year from d.scheduled_scan_dt)='2024'
+and extract(month from d.scheduled_scan_dt)='03'
+and d.is_scanned = TRUE
+group by c.email
+order by c.email asc;
+
+--- question 26
+
+-- Create customers table
+CREATE TABLE customers (
+    id INT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL
+);
+
+-- Insert customers data
+INSERT INTO customers (id, email) VALUES
+(1, 'lrathke0@usa.gov'),
+(2, 'epearsall1@fema.gov'),
+(3, 'sivasechko2@cisco.com');
+
+--------------------------------------------------
+
+-- Create site_metrics table
+CREATE TABLE site_metrics (
+    customer_id INT NOT NULL,
+    cpu_usage DECIMAL(5,2) NOT NULL,
+    memory_usage DECIMAL(5,2) NOT NULL,
+    disk_usage DECIMAL(5,2) NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
+-- Insert site_metrics data
+INSERT INTO site_metrics (customer_id, cpu_usage, memory_usage, disk_usage) VALUES
+(1, 31.53, 80.84, 1.51),
+(1, 12.54, 26.47, 47.74),
+(1, 12.34, 46.24, 34.43),
+(1, 26.64, 84.98, 17.56),
+
+(2, 80.45, 50.05, 10.63),
+(2, 40.14, 86.67, 15.98),
+(2, 30.14, 34.38, 17.67),
+(2, 1.11, 83.44, 2.95),
+
+(3, 30.60, 18.60, 28.02),
+(3, 41.64, 33.64, 5.20),
+(3, 31.88, 7.37, 91.14),
+(3, 43.20, 9.56, 40.40),
+(3, 2.33, 34.29, 18.65),
+(3, 11.50, 32.89, 71.39),
+(3, 39.57, 4.49, 48.05),
+(3, 25.06, 23.77, 33.00),
+(3, 32.81, 1.59, 25.85),
+(3, 48.38, 79.21, 8.31),
+(3, 11.62, 26.75, 71.71),
+(3, 54.43, 6.48, 4.86);
+
+-- where doesnot work with alias
+select 
+  c.email as email,
+  round(avg(s.cpu_usage),2) as average_cpu_usage,
+  round(avg(s.memory_usage),2) as average_memory_usage,
+  round(avg(s.disk_usage),2) as average_disk_usage
+from customers c 
+join site_metrics s 
+on c.id = s.customer_id
+group by email 
+having avg(s.cpu_usage)>50 or
+avg(s.memory_usage) >50 or
+avg(s.disk_usage) >50
+order by email asc;
+
+
+---> question 27
+
+-- Create customers table
+CREATE TABLE customers (
+    id INT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL
+);
+
+-- Insert customers data
+INSERT INTO customers (id, email) VALUES
+(1, 'dcristofol0@slashdot.org'),
+(2, 'mbillanie1@japanpost.jp'),
+(3, 'hmainz2@utexas.edu');
+
+--------------------------------------------------
+
+-- Create sites table
+CREATE TABLE sites (
+    customer_id INT NOT NULL,
+    url VARCHAR(2083) NOT NULL,
+    is_active BOOLEAN NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
+-- Insert sites data
+INSERT INTO sites (customer_id, url, is_active) VALUES
+(1, 'https://trellian.com', TRUE),
+(1, 'https://www.google.de', TRUE),
+
+(1, 'https://merriam-webster.com', TRUE),
+(1, 'https://wordpress.com', TRUE),
+(1, 'https://nsw.gov.au', true),
+(1, 'https://www.barnesandnoble.com', TRUE),
+(1, 'https://www.yahoo.com', TRUE),
+
+(2, 'https://cloudflare.com', false),
+(2, 'https://www.is.gd', true),
+(2, 'https://www.unesco.org', TRUE),
+
+(3, 'https://www.sina.com.cn', false),
+(3, 'https://xinhuanet.com', TRUE),
+(3, 'https://cyberchimps.com', TRUE),
+(3, 'https://ask.com', TRUE),
+(3, 'https://businessinsider.com', TRUE),
+(3, 'https://www.dailymail.co.uk', TRUE),
+(3, 'https://www.guardian.co.uk', TRUE),
+(3, 'https://www.microsoft.com', TRUE),
+(3, 'https://www.gizmodo.com', TRUE),
+(3, 'https://www.163.com', TRUE);
+
+
+select 
+  c.email as email,
+  count(s.url) as total_active_sites
+from customers c 
+join sites s
+on c.id = s.customer_id
+where s.is_active=TRUE
+group by c.email
+order by c.email asc;
+
+---> question 28
+
+-- Create accounts table
+CREATE TABLE accounts (
+    id INT PRIMARY KEY,
+    iban VARCHAR(50) NOT NULL
+);
+
+-- Insert accounts data
+INSERT INTO accounts (id, iban) VALUES
+(1, 'SK3989242092299711014161'),
+(2, 'PL28914186108442236775210000'),
+(3, 'CH9384180F7GKQK4NEHFQ4GT41TBM8DPFHTMNSBVW5D4CXVIRR'),
+(4, 'GT41TBM8DPFHMTNSBVW5D4CXVIRR'),
+(5, 'IT27Y0150159036TW7E5I6ZDEQZ');
+
+--------------------------------------------------
+
+-- Create income table
+CREATE TABLE income (
+    account_id INT NOT NULL,
+    dt TIMESTAMP NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (account_id) REFERENCES accounts(id)
+);
+
+-- Insert income data
+INSERT INTO income (account_id, dt, amount) VALUES
+(1, '2024-01-17 16:43:20', 4061.53),
+
+(1, '2024-02-28 05:30:15', 4488.11),
+(1, '2024-04-07 05:41:27', 4001.91),
+
+(2, '2023-12-21 07:38:45', 4313.69),
+(2, '2024-01-08 04:48:45', 3640.82),
+(2, '2024-01-20 17:31:20', 3385.15),
+
+(3, '2024-01-06 23:18:30', 2347.15),
+(3, '2024-03-08 12:53:20', 3814.86),
+(3, '2024-04-01 21:18:16', 2764.27),
+
+(4, '2024-01-02 23:52:06', 3526.08),
+(4, '2024-02-04 12:32:28', 2221.91),
+(4, '2024-02-11 19:44:53', 4197.07),
+(4, '2024-03-06 06:28:34', 1357.44),
+(4, '2024-03-16 16:13:49', 1854.52),
+
+(5, '2023-12-31 22:08:57', 2819.54),
+(5, '2024-01-14 18:03:47', 2641.20),
+(5, '2024-01-23 07:50:22', 3692.56),
+(5, '2024-02-28 23:43:28', 1999.09),
+(5, '2024-03-20 10:29:44', 1670.18),
+(5, '2024-03-27 11:12:04', 1193.15);
+
+
+select 
+  a.iban  as iban ,
+  round(avg(i.amount),2) as average_income ,
+  sum(i.amount)  as total_income
+from accounts a 
+join income i 
+on a.id = i.account_id
+where extract(year from i.dt)='2024'
+and extract(month from i.dt)<='03'
+group by a.iban 
+order by average_income desc, iban asc
+limit 3;
+
+
+
+---->  question 29
+
+-- Create accounts table
+CREATE TABLE accounts (
+    id INT PRIMARY KEY,
+    iban VARCHAR(34) NOT NULL
+);
+
+-- Insert accounts data
+INSERT INTO accounts (id, iban) VALUES
+(1, 'FR554477615473NDTN3FHMOUT36'),
+(2, 'DK4612721831257301'),
+(3, 'RS53523757946016541143');
+
+--------------------------------------------------
+
+-- Create income table
+CREATE TABLE income (
+    account_id INT NOT NULL,
+    dt TIMESTAMP NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (account_id) REFERENCES accounts(id)
+);
+
+-- Insert income data
+INSERT INTO income (account_id, dt, amount) VALUES
+(1, '2022-12-31 10:03:42', 2779.19),
+(1, '2023-02-04 08:50:14', 1777.68),
+(1, '2023-02-13 04:22:07', 1954.81),
+(1, '2023-03-04 14:46:04', 1547.79),
+(1, '2023-05-23 15:42:13', 1208.49),
+(1, '2023-05-24 23:24:07', 1521.72),
+(1, '2023-07-28 11:01:46', 1792.75),
+(1, '2023-12-07 14:19:09', 2374.25),
+(1, '2024-01-27 05:55:36', 2803.39),
+
+(2, '2022-12-03 18:04:34', 1826.65),
+(2, '2023-02-17 00:59:57', 3074.11),
+(2, '2023-03-01 08:17:15', 1007.30),
+(2, '2023-08-19 09:16:41', 4515.04),
+(2, '2024-01-08 04:14:22', 3321.78),
+(2, '2024-01-10 15:16:28', 2033.87),
+
+(3, '2023-05-09 07:28:27', 3158.66),
+(3, '2023-05-22 04:39:34', 3851.20),
+(3, '2023-07-21 19:51:14', 4152.29),
+(3, '2023-10-05 05:42:49', 4722.20),
+(3, '2023-11-11 02:42:59', 1592.16);
+
+select 
+  a.iban as iban,
+  sum(i.amount)as total_income,
+  '20%'  as tax_rate,
+  round(20*(sum(i.amount))/100,2)  as calculated_tax
+from accounts a 
+join income i
+on a.id = i.account_id
+where extract(year from i.dt)='2023'
+group by a.iban
+order by a.iban asc;
+
+
+
+---> question 30
+-- Create customers table
+CREATE TABLE customers (
+    id INT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL
+);
+
+-- Insert customers
+INSERT INTO customers (id, email) VALUES
+(1, 'otoohey0@elpais.com'),
+(2, 'egrebbin1@state.gov'),
+(3, 'arides2@sohu.com');
+
+-- Create expenses table
+CREATE TABLE expense (
+    customer_id INT NOT NULL,
+    dt TIMESTAMP NOT NULL,
+    amount DECIMAL(8,2) NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
+-- Insert expenses
+INSERT INTO expense (customer_id, dt, amount) VALUES
+(1,'2024-02-21 22:12:12', 90.41),
+(1,'2024-02-27 06:48:37', 792.88),
+(1,'2024-03-10 05:19:43', 442.01),
+(1,'2024-03-11 19:48:25', 327.35),
+(1,'2024-03-24 22:03:06', 639.62),
+(2,'2024-03-29 00:37:46', 150.12),
+(2,'2024-04-02 03:36:50', 257.67),
+(2,'2024-02-21 06:11:26', 400.22),
+(2,'2024-03-11 15:34:19', 298.41),
+(2,'2024-03-25 04:36:27', 376.87),
+(2,'2024-03-29 19:05:51', 530.07),
+(2,'2024-03-30 07:07:28', 287.84),
+(2,'2024-04-02 15:44:22', 868.03),
+(3,'2024-03-01 16:02:47', 33.30),
+(3,'2024-03-06 11:53:42', 838.51),
+(3,'2024-03-20 23:34:48', 968.08),
+(3,'2024-03-21 21:18:08', 35.36),
+(3,'2024-03-30 06:51:13', 956.12),
+(3,'2024-03-31 10:11:56', 896.32),
+(3,'2024-03-31 22:36:57', 740.94);
+
+-- Create income table
+CREATE TABLE income (
+    customer_id INT NOT NULL,
+    dt TIMESTAMP NOT NULL,
+    amount DECIMAL(8,2) NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
+-- Insert income
+INSERT INTO income (customer_id, dt, amount) VALUES
+(1,'2024-02-20 21:00:55', 366.66),
+(1,'2024-03-11 03:25:04', 769.38),
+(1,'2024-03-15 00:49:53', 84.10),
+(1,'2024-03-21 18:32:51', 839.48),
+(1,'2024-03-29 15:34:13', 333.97),
+(1,'2024-04-01 00:34:24', 253.13),
+(1,'2024-04-02 11:13:49', 263.56),
+(2,'2024-03-20 10:53:26', 822.75),
+(2,'2024-02-26 14:57:39', 277.23),
+(2,'2024-03-19 09:24:47', 24.08),
+(2,'2024-03-20 15:54:24', 988.34),
+(2,'2024-04-02 08:28:38', 990.54),
+(2,'2024-03-01 10:23:33', 430.82),
+(2,'2024-02-29 08:25:32', 482.85),
+(3,'2024-03-01 05:10:42', 962.60),
+(3,'2024-03-04 08:27:34', 30.21),
+(3,'2024-03-19 12:12:01', 80.00),
+(3,'2024-03-21 00:32:10', 674.76),
+(3,'2024-03-23 14:14:32', 863.79),
+(3,'2024-04-09 13:37:07', 51.42);
+
+
+-- select 
+--   c.email  as email,
+--   sum(e.amount) as total_expense,
+--   sum(income_table.amount)  as total_income
+-- from customers c 
+-- join expenses e 
+-- on c.id = e.customer_id
+-- join(
+--   select
+--   c.id as customer_id,
+--   i.dt as dt,
+--   i.amount as amount
+--   from customers c 
+--   join income i 
+--   on c.id = i.customer_id
+-- ) as income_table
+-- on income_table.customer_id  = e.customer_id 
+-- where extract(year from e.dt)='2024' 
+-- and extract(month from e.dt)='03'
+-- group by c.email;
+
+
+select 
+  c.email as email,
+  round(e.total_expense,2) as total_expense,
+  round(i.total_income,2) as total_income
+from customers c 
+left join (
+  select 
+       customer_id,
+       sum(amount) as total_expense
+       from expense
+       where dt>='2024-03-01' and dt<='2024-03-31'
+       group by customer_id
+) e on c.id = e.customer_id
+left join(
+  select
+      customer_id,
+      sum(amount) as total_income
+      from income
+      where dt>='2024-03-01' and dt<='2024-03-31'
+      group by customer_id
+) i on c.id = i.customer_id
+group by c.email,e.total_expense,i.total_income;
+
+
+SELECT
+  c.email AS email,
+  COALESCE(ROUND((e.amount), 2), 0.00) AS total_expenses,
+  COALESCE(ROUND(SUM(i.amount), 2), 0.00) AS total_income
+FROM customers c
+LEFT JOIN expense e ON c.id = e.customer_id
+  AND e.dt >= '2024-03-01' AND e.dt < '2024-04-01'
+LEFT JOIN income i ON c.id = i.customer_id
+  AND i.dt >= '2024-03-01' AND i.dt < '2024-04-01'
+GROUP BY c.email
+ORDER BY c.email ASC;
+
+
+
+
+
+
+
+
